@@ -1,17 +1,16 @@
 import requests
 import math
 from datetime import datetime,timedelta
-import pytz
 
 from access import ToS_Access
 
-from ToSlogin import api_key
+from keys import quandlKey, tosKey
 
 def getSpot(tick):
         header = {'Authorization': 'Bearer {}'.format(auth.access_tkn),
             'Content-Type': "application/json"}
         endpoint = r"https://api.tdameritrade.com/v1/marketdata/{}/quotes".format(tick)
-        payload = {'apikey': api_key}
+        payload = {'apikey': tosKey}
         req1 = requests.get(url=endpoint, params=payload, headers=header)
         quote = req1.json()
         last = quote[tick]['lastPrice']
@@ -34,7 +33,7 @@ def getStockHist(tick):
     endpoint = r"https://api.tdameritrade.com/v1/marketdata/{}/pricehistory".format(tick)
 
     payload = {
-        'apikey': api_key,
+        'apikey': tosKey,
         'period': str(6),
         'periodType': 'month',
         'frequecy': str(1),
@@ -75,7 +74,7 @@ def getImpVol(tick):
     end_date = datetime.now() + timedelta(days=45)
     end_date = end_date.strftime("%Y-%m-%d")
 
-    payload = {'apikey': api_key,
+    payload = {'apikey': tosKey,
                 'symbol': 'XLF',
                 'optionType': 'S',
                 'strikeCount': 2,
