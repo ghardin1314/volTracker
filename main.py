@@ -3,8 +3,11 @@ import math
 from datetime import datetime,timedelta
 
 from access import ToS_Access
-
 from keys import quandlKey, tosKey
+from vix import impVol
+
+auth = ToS_Access()
+auth.Access()
 
 def getSpot(tick):
         header = {'Authorization': 'Bearer {}'.format(auth.access_tkn),
@@ -61,104 +64,24 @@ def getStockHist(tick):
         close.append(last)
 
     return close
-    
-def getImpVol(tick):
 
-    spot = getSpot(tick)
+def realVol(tick):
 
-    option_url = r"https://api.tdameritrade.com/v1/marketdata/chains"
-
-    start_date = datetime.now() + timedelta(days=15)
-    start_date = start_date.strftime("%Y-%m-%d")
-
-    end_date = datetime.now() + timedelta(days=45)
-    end_date = end_date.strftime("%Y-%m-%d")
-
-    payload = {'apikey': tosKey,
-                'symbol': 'XLF',
-                'optionType': 'S',
-                'strikeCount': 2,
-                'fromDate': start_date,
-                'toDate': end_date
-                }
-    
-    header = {'Authorization': 'Bearer {}'.format(auth.access_tkn),
-                'Content-Type': "application/json"}
-
-    req = requests.get(url=option_url, params=payload, headers=header)
-    content = req.json()
-    calls = content['callExpDateMap']
-    puts = content['putExpDateMap']
-
-    keys = list(calls)
-    vols = []
-    vp = []
-    dwVol = []
-
-    for key in keys:
-
-        strikes = list(calls[key])
-        test = calls[key][strikes[0]]
-
-        #gets rid of weekly options
-        if calls[key][strikes[0]][0]['expirationType'] != 'R':
-            calls.pop(key)
-            puts.pop(key)
-        else:
-            vols = []
-            weights = []
-            for strike in strikes:
-                strikeVol = calls[key][strike][0]['volatility']
-
-
-            #     strikeVol = calls[key][strike][0]['volatility']
-            #     # days = calls[key][strike][0]['daysToExpiration']
-            #     weight = 1/abs(float(strike)-spot)
-            #     wVol = strikeVol*weight
-            #     vols.append(wVol)
-            #     weights.append(weight)
-
-
-            #     strikeVol = puts[key][strike][0]['volatility']
-            #     days = puts[key][strike][0]['daysToExpiration']
-            #     weight = 1/abs(float(strike)-spot)
-            #     wVol = strikeVol*weight
-            #     vols.append(wVol)
-            #     weights.append(weight)
-            # strike_avg = sum(vols)/sum(weights)
-            # vp.append(strike_avg)
-            # days = calls[key][strike][0]['daysToExpiration']
-            # day_weight.append[days]
-            # dwVol.append(strike_avg*days)
-
-    # ImpVol = sum(vp)/sum(day_weight)
-
-    return
-
+    data = getStockHist(tick)
+    return realizedVol(data)
 
 if __name__ == '__main__':
-    auth = ToS_Access()
-    auth.Access()
 
-    test = getStockHist("XLF")
-    var = realizedVol(test)
+    tick = input("Enter Stock Ticker: ")
 
-    getImpVol("XLF")
+    realized = realVol(tick)
+    print("Realized Vol: {}".format(realized))
+    implied = impVol(tick)
+    print ("Implied Vol: {}".format(implied))
 
-    # option_url = r"https://api.tdameritrade.com/v1/marketdata/chains"
-
-    # payload = {'apikey': api_key,
-    #             'symbol': 'XLF',
-    #             'optionType': 'S',
-    #             'strikeCount': 5
-    #             }
-    
-    # header = {'Authorization': 'Bearer {}'.format(auth.access_tkn),
-    #             'Content-Type': "application/json"}
-
-    # req = requests.get(url=option_url, params=payload, headers=header)
-    # content = req.json()
-    # print(content)
-
-
-
+    if realized > implied:
+        discount = (realized-implied)/implied*100
+        print("Implied Vol Discount of {}%".format(round(discount,2)))
+    elif implied > realized:
+        premium = (implied-realized)/implied*100
+        print("Implied Vol Premium of {}%".format(round(premium, 2)))

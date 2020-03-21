@@ -56,7 +56,7 @@ def roundDown(value, list):
             res = val
     return res
 
-def vix(tick):
+def impVol(tick):
 
     option_url = r"https://api.tdameritrade.com/v1/marketdata/chains"
 
@@ -202,7 +202,7 @@ def vix(tick):
 
 if __name__ == '__main__':
 
-    print(vix('XLF'))
+    print(impVol('XLF'))
 
     pass
 
