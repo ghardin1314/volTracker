@@ -57,6 +57,7 @@ def roundDown(value, list):
     return res
 
 def impVol(tick):
+    auth.Access()
 
     option_url = r"https://api.tdameritrade.com/v1/marketdata/chains"
 
